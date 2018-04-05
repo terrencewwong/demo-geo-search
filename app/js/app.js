@@ -1,8 +1,10 @@
-/* global $, Hogan, algoliasearch, algoliasearchHelper, google */
+import React from 'react'
+import $ from 'jquery'
+import algoliasearch from 'algoliasearch'
+import algoliasearchHelper from 'algoliasearch-helper'
 
-$(document).ready(function () {
-  // INITIALIZATION
-  // ==============
+export class App extends React.Component {
+    componentDidMount () {
   var APPLICATION_ID = 'latency';
   var SEARCH_ONLY_API_KEY = '6be0576ff61c053d5f9a3225e2a90f76';
   var INDEX_NAME = 'demo-geosearch';
@@ -341,4 +343,55 @@ $(document).ready(function () {
       return result;
     };
   }
-});
+
+    }
+
+    render () {
+        return (
+        <React.Fragment>
+          <header>
+            <h1>Airports - Geo Search Demo</h1>
+            <a href="" className="change_page_state page_mode mode_button active" data-mode="bounding" data-state="rectangle">Bounding box</a>
+            <a href="" className="change_page_state page_mode mode_button" data-mode="around"   data-state="ip">Around a location</a>
+
+            <p className="page_mode active" data-mode="bounding">
+                A bounding box filters the scope of the results to a specified zone.<br />
+              This zone can be
+              <a href="" className="change_page_state state_link active" data-mode="bounding" data-state="rectangle">a rectangle</a>, or a
+              <a href="" className="change_page_state state_link" data-mode="bounding" data-state="polygon">a polygon</a>.
+            </p>
+            <p className="page_mode" data-mode="around">
+                Searching around a location can also rank the results by distance.<br />
+              It can be done via the
+              <a href="" className="change_page_state state_link" data-mode="around" data-state="ip">IP address</a>, or by providing the lat/lng of a point:
+              <a href="" className="change_page_state state_link" data-mode="around" data-state="nyc">NYC</a>,
+              <a href="" className="change_page_state state_link" data-mode="around" data-state="london">London</a>,
+              <a href="" className="change_page_state state_link" data-mode="around" data-state="sydney">Sydney</a>...
+            </p>
+          </header>
+
+
+          <section className="map_section">
+            <div className="left-column">
+              <input id="search-input" type="text" autoComplete="off" spellCheck="false" autoCorrect="off" placeholder="Search by name, city, airport code..."/>
+              <div id="hits"></div>
+            </div>
+
+            <div className="right-column">
+              <div id="map"></div>
+            </div>
+
+            <div className="clear-both"></div>
+          </section>
+
+
+          <footer>
+            Geo-Search demo -
+            Read the <a href="https://www.algolia.com/doc/geo-search/geo-search-overview">guide</a> - 
+            Source Code on <a href="https://github.com/algolia/demo-geo-search">GitHub</a> -
+            Powered by <a href="http://www.algolia.com/">Algolia</a>
+        </footer>
+    </React.Fragment>
+        )
+    }
+}
