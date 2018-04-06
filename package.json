@@ -14,11 +14,23 @@
   "scripts": {
     "dev": "browser-sync start --server ./app --files 'app/*' --no-open",
     "import": "./scripts/import",
-    "start": "webpack-dev-server --open --mode development"
+    "start": "webpack-dev-server --open --mode development",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.js": [
+      "standard --fix --verbose | snazzy",
+      "prettier-standard",
+      "git add"
+    ]
+  },
+  "standard": {
+    "parser": "babel-eslint"
   },
   "homepage": "https://www.algolia.com/doc/geo-search/geo-search-overview",
   "devDependencies": {
     "babel-core": "^6.26.0",
+    "babel-eslint": "^8.2.2",
     "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
@@ -27,6 +39,11 @@
     "css-loader": "^0.28.11",
     "html-webpack-include-assets-plugin": "^1.0.4",
     "html-webpack-plugin": "^3.2.0",
+    "husky": "^0.14.3",
+    "lint-staged": "^7.0.4",
+    "prettier-standard": "^8.0.1",
+    "snazzy": "^7.1.1",
+    "standard": "^11.0.1",
     "style-loader": "^0.20.3",
     "webpack": "^4.5.0",
     "webpack-cli": "^2.0.14",
