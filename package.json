@@ -53,6 +53,7 @@
   "dependencies": {
     "algoliasearch": "^3.26.0",
     "algoliasearch-helper": "^2.24.0",
+    "lodash.capitalize": "^4.2.1",
     "react": "^16.3.1",
     "react-dom": "^16.3.1",
     "react-google-maps": "^9.4.5"

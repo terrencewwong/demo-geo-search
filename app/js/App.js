@@ -1,4 +1,5 @@
 import React from 'react'
+import capitalize from 'lodash.capitalize'
 import algoliasearch from 'algoliasearch'
 import algoliasearchHelper from 'algoliasearch-helper'
 import {
@@ -6,39 +7,58 @@ import {
   withGoogleMap,
   GoogleMap,
   Marker,
-  Rectangle
+  Circle
 } from 'react-google-maps'
 
 import { Header } from './Header'
 import { Footer } from './Footer'
 
-class RectangleWithOnMountCallback extends React.Component {
-  componentDidMount () {
-    this.props.onMount && this.props.onMount(this.rectangle)
-  }
+// const PARIS_COORDINATES = {
+//   lat: 48.8566,
+//   lng: 2.3522
+// }
 
-  render () {
-    return (
-      <Rectangle
-        ref={node => {
-          this.rectangle = node
-        }}
-        {...this.props}
-      />
-    )
-  }
+const CITE_COORDINATES = {
+  lat: 48.8748849,
+  lng: 2.3474592
 }
+
+const withOnMountCallback = BaseComponent => {
+  class ComponentWithOnMountCallback extends React.Component {
+    componentDidMount () {
+      this.props.onMount && this.props.onMount(this.node)
+    }
+
+    render () {
+      return (
+        <BaseComponent
+          ref={node => {
+            this.node = node
+          }}
+          {...this.props}
+        />
+      )
+    }
+  }
+  ComponentWithOnMountCallback.displayName = `${
+    BaseComponent.displayName
+  }WithOnMountCallback`
+
+  return ComponentWithOnMountCallback
+}
+
+const CircleWithOnMountCallback = withOnMountCallback(Circle)
 
 const _MyMapComponent = withScriptjs(
   withGoogleMap(props => (
     <GoogleMap
-      defaultCenter={{ lat: 50.57161084594319, lng: 5.362008500000002 }}
+      defaultCenter={CITE_COORDINATES}
       options={{
         streetViewControl: false,
         mapTypeControl: false,
-        zoom: 4,
-        minZoom: 3,
-        maxZoom: 12,
+        zoom: 14,
+        minZoom: 10,
+        maxZoom: 20,
         styles: [{ stylers: [{ hue: '#3596D2' }] }]
       }}
     >
@@ -58,49 +78,31 @@ const MyMapComponent = props => (
 )
 
 const Hit = ({ hit }) => {
-  const { _highlightResult, _rankingInfo, city, distance, name } = hit
-
-  const displayDistance = _rankingInfo.matchedGeoLocation
-    ? parseInt(_rankingInfo.matchedGeoLocation.distance / 1000, 10) + ' km'
-    : distance
-
   return (
     <div className='hit'>
-      <h3
-        className='hit-airport-code'
-        dangerouslySetInnerHTML={{
-          __html: _highlightResult.iata_code.value
-        }}
-      />
       <h2 className='hit-name'>
         <span
           dangerouslySetInnerHTML={{
-            __html: _highlightResult.name.value
+            __html: capitalize(hit.first_name) + ' ' + capitalize(hit.last_name)
           }}
         />
-        {name !== city ? (
-          <span
-            dangerouslySetInnerHTML={{
-              __html: '- ' + _highlightResult.city.value
-            }}
-          />
-        ) : null}
-      </h2>
-      <p className='hit-location'>
+        <span> - </span>
         <span
           dangerouslySetInnerHTML={{
-            __html: _highlightResult.country.value
+            __html: capitalize(hit.profession)
           }}
         />
-        <span className='hit-distance'>{displayDistance}</span>
-      </p>
+      </h2>
     </div>
   )
 }
 
-const APPLICATION_ID = 'latency'
-const SEARCH_ONLY_API_KEY = '6be0576ff61c053d5f9a3225e2a90f76'
-const INDEX_NAME = 'demo-geosearch'
+// const APPLICATION_ID = 'latency'
+// const SEARCH_ONLY_API_KEY = '6be0576ff61c053d5f9a3225e2a90f76'
+// const INDEX_NAME = 'demo-geosearch'
+const APPLICATION_ID = '2MFX9AG14D'
+const SEARCH_ONLY_API_KEY = 'c89749f224009b7dc9684d4cf30f7b13'
+const INDEX_NAME = 'annuaire_sante'
 const PARAMS = { hitsPerPage: 60 }
 
 const algolia = algoliasearch(APPLICATION_ID, SEARCH_ONLY_API_KEY)
@@ -161,23 +163,24 @@ export class App extends React.Component {
               <div id='hits'>
                 {this.state.hits
                   .slice(0, 20)
-                  .map(hit => <Hit key={hit.iata_code} hit={hit} />)}
+                  .map(hit => <Hit key={hit.objectID} hit={hit} />)}
               </div>
             )}
           </div>
           <div className='right-column'>
             <MyMapComponent>
-              <RectangleWithOnMountCallback
-                onMount={rectangle => this.registerBoundingBox(rectangle)}
+              <CircleWithOnMountCallback
+                onMount={boundingBox => this.registerBoundingBox(boundingBox)}
                 options={{
-                  bounds: { north: 60, south: 40, east: 16, west: -4 },
+                  center: CITE_COORDINATES,
+                  radius: 1000,
                   strokeColor: '#EF5362',
                   strokeOpacity: 0.8,
                   strokeWeight: 2,
                   fillColor: '#EF5362',
                   fillOpacity: 0.15,
                   draggable: true,
-                  editable: true,
+                  editable: false,
                   geodesic: true
                 }}
               />
