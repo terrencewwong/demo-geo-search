@@ -3,9 +3,35 @@ import React from 'react'
 import $ from 'jquery'
 import algoliasearch from 'algoliasearch'
 import algoliasearchHelper from 'algoliasearch-helper'
+import GoogleMapReact from 'google-map-react'
 
 import { Header } from './Header'
 import { Footer } from './Footer'
+
+class SimpleMap extends React.Component {
+  static defaultProps = {
+    center: {
+      lat: 59.95,
+      lng: 30.33
+    },
+    zoom: 11
+  }
+
+  render () {
+    return (
+      // Important! Always set the container height explicitly
+      <div style={{ height: '100vh', width: '100%' }}>
+        <GoogleMapReact
+          bootstrapURLKeys={{ key: 'AIzaSyBnDR4e5_qobPG6Vn_zjhc1vyOIooChZt8' }}
+          defaultCenter={this.props.center}
+          defaultZoom={this.props.zoom}
+        >
+          <div lat={59.955413} lng={30.337844} text={'Kreyser Avrora'} />
+        </GoogleMapReact>
+      </div>
+    )
+  }
+}
 
 const Hit = ({ hit }) => {
   const { _highlightResult, _rankingInfo, city, distance, name } = hit
@@ -15,14 +41,14 @@ const Hit = ({ hit }) => {
     : distance
 
   return (
-    <div class='hit'>
+    <div className='hit'>
       <h3
-        class='hit-airport-code'
+        className='hit-airport-code'
         dangerouslySetInnerHTML={{
           __html: _highlightResult.iata_code.value
         }}
       />
-      <h2 class='hit-name'>
+      <h2 className='hit-name'>
         <span
           dangerouslySetInnerHTML={{
             __html: _highlightResult.name.value
@@ -36,13 +62,13 @@ const Hit = ({ hit }) => {
           />
         ) : null}
       </h2>
-      <p class='hit-location'>
+      <p className='hit-location'>
         <span
           dangerouslySetInnerHTML={{
             __html: _highlightResult.country.value
           }}
         />
-        <span class='hit-distance'>{displayDistance}</span>
+        <span className='hit-distance'>{displayDistance}</span>
       </p>
     </div>
   )
@@ -439,6 +465,7 @@ export class App extends React.Component {
         </section>
 
         <Footer />
+        <SimpleMap />
       </React.Fragment>
     )
   }
