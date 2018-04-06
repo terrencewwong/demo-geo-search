@@ -71,7 +71,7 @@ const MyMapComponent = props => (
   <_MyMapComponent
     googleMapURL='//maps.googleapis.com/maps/api/js?key=AIzaSyBnDR4e5_qobPG6Vn_zjhc1vyOIooChZt8'
     loadingElement={<div style={{ height: `100%` }} />}
-    containerElement={<div style={{ width: '614px', height: `720px` }} />}
+    containerElement={<div style={{ height: '614px', width: `720px` }} />}
     mapElement={<div style={{ height: `100%` }} />}
     {...props}
   />
