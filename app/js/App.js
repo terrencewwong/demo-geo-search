@@ -1,5 +1,4 @@
 import React from 'react'
-import $ from 'jquery'
 import algoliasearch from 'algoliasearch'
 import algoliasearchHelper from 'algoliasearch-helper'
 import {
@@ -113,18 +112,6 @@ export class App extends React.Component {
   }
 
   componentDidMount () {
-    // DOM and Templates binding
-    var $searchInput = $('#search-input')
-
-    // TEXTUAL SEARCH
-    // ===============
-    $searchInput.on('input propertychange', function (e) {
-      var query = e.currentTarget.value
-      algoliaHelper.setQuery(query).search()
-    })
-
-    // DISPLAY RESULTS
-    // ===============
     algoliaHelper.on('result', content => {
       this.setState({ hits: content.hits })
     })
@@ -146,6 +133,10 @@ export class App extends React.Component {
     algoliaHelper.search()
   }
 
+  handleChange = e => {
+    algoliaHelper.setQuery(e.currentTarget.value).search()
+  }
+
   render () {
     return (
       <React.Fragment>
@@ -160,6 +151,7 @@ export class App extends React.Component {
               spellCheck='false'
               autoCorrect='off'
               placeholder='Search by name, city, airport code...'
+              onChange={this.handleChange}
             />
             {this.state.hits.length === 0 ? (
               <div id='no-results-message'>
