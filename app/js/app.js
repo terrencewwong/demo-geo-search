@@ -1,10 +1,58 @@
-/* global Hogan, google */
+/* global google */
 import React from 'react'
 import $ from 'jquery'
 import algoliasearch from 'algoliasearch'
 import algoliasearchHelper from 'algoliasearch-helper'
 
+import { Header } from './Header'
+import { Footer } from './Footer'
+
+const Hit = ({ hit }) => {
+  const { _highlightResult, _rankingInfo, city, distance, name } = hit
+
+  const displayDistance = _rankingInfo.matchedGeoLocation
+    ? parseInt(_rankingInfo.matchedGeoLocation.distance / 1000, 10) + ' km'
+    : distance
+
+  return (
+    <div class='hit'>
+      <h3
+        class='hit-airport-code'
+        dangerouslySetInnerHTML={{
+          __html: _highlightResult.iata_code.value
+        }}
+      />
+      <h2 class='hit-name'>
+        <span
+          dangerouslySetInnerHTML={{
+            __html: _highlightResult.name.value
+          }}
+        />
+        {name !== city ? (
+          <span
+            dangerouslySetInnerHTML={{
+              __html: '- ' + _highlightResult.city.value
+            }}
+          />
+        ) : null}
+      </h2>
+      <p class='hit-location'>
+        <span
+          dangerouslySetInnerHTML={{
+            __html: _highlightResult.country.value
+          }}
+        />
+        <span class='hit-distance'>{displayDistance}</span>
+      </p>
+    </div>
+  )
+}
+
 export class App extends React.Component {
+  state = {
+    hits: []
+  }
+
   componentDidMount () {
     var APPLICATION_ID = 'latency'
     var SEARCH_ONLY_API_KEY = '6be0576ff61c053d5f9a3225e2a90f76'
@@ -18,10 +66,7 @@ export class App extends React.Component {
 
     // DOM and Templates binding
     var $map = $('#map')
-    var $hits = $('#hits')
     var $searchInput = $('#search-input')
-    var hitsTemplate = Hogan.compile($('#hits-template').text())
-    var noResultsTemplate = Hogan.compile($('#no-results-template').text())
 
     // Map initialization
     var map = new google.maps.Map($map.get(0), {
@@ -188,32 +233,14 @@ export class App extends React.Component {
 
     // DISPLAY RESULTS
     // ===============
-    algoliaHelper.on('result', function (content) {
+    algoliaHelper.on('result', content => {
+      this.setState({ hits: content.hits.slice(0, 20) })
       renderMap(content)
-      renderHits(content)
     })
 
     algoliaHelper.on('error', function (error) {
       console.log(error)
     })
-
-    function renderHits (content) {
-      if (content.hits.length === 0) {
-        $hits.html(noResultsTemplate.render())
-        return
-      }
-      content.hits = content.hits.slice(0, 20)
-      for (var i = 0; i < content.hits.length; ++i) {
-        var hit = content.hits[i]
-        hit.displayCity = hit.name === hit.city
-        if (hit._rankingInfo.matchedGeoLocation) {
-          hit.distance =
-            parseInt(hit._rankingInfo.matchedGeoLocation.distance / 1000, 10) +
-            ' km'
-        }
-      }
-      $hits.html(hitsTemplate.render(content))
-    }
 
     function renderMap (content) {
       removeMarkersFromMap()
@@ -380,82 +407,7 @@ export class App extends React.Component {
   render () {
     return (
       <React.Fragment>
-        <header>
-          <h1>Airports - Geo Search Demo</h1>
-          <a
-            href=''
-            className='change_page_state page_mode mode_button active'
-            data-mode='bounding'
-            data-state='rectangle'
-          >
-            Bounding box
-          </a>
-          <a
-            href=''
-            className='change_page_state page_mode mode_button'
-            data-mode='around'
-            data-state='ip'
-          >
-            Around a location
-          </a>
-
-          <p className='page_mode active' data-mode='bounding'>
-            A bounding box filters the scope of the results to a specified zone.<br />
-            This zone can be
-            <a
-              href=''
-              className='change_page_state state_link active'
-              data-mode='bounding'
-              data-state='rectangle'
-            >
-              a rectangle
-            </a>, or a
-            <a
-              href=''
-              className='change_page_state state_link'
-              data-mode='bounding'
-              data-state='polygon'
-            >
-              a polygon
-            </a>.
-          </p>
-          <p className='page_mode' data-mode='around'>
-            Searching around a location can also rank the results by distance.<br />
-            It can be done via the
-            <a
-              href=''
-              className='change_page_state state_link'
-              data-mode='around'
-              data-state='ip'
-            >
-              IP address
-            </a>, or by providing the lat/lng of a point:
-            <a
-              href=''
-              className='change_page_state state_link'
-              data-mode='around'
-              data-state='nyc'
-            >
-              NYC
-            </a>,
-            <a
-              href=''
-              className='change_page_state state_link'
-              data-mode='around'
-              data-state='london'
-            >
-              London
-            </a>,
-            <a
-              href=''
-              className='change_page_state state_link'
-              data-mode='around'
-              data-state='sydney'
-            >
-              Sydney
-            </a>...
-          </p>
-        </header>
+        <Header />
 
         <section className='map_section'>
           <div className='left-column'>
@@ -467,9 +419,18 @@ export class App extends React.Component {
               autoCorrect='off'
               placeholder='Search by name, city, airport code...'
             />
-            <div id='hits' />
+            {this.state.hits.length === 0 ? (
+              <div id='no-results-message'>
+                <p>We didn't find any airports in this location.</p>
+              </div>
+            ) : (
+              <div id='hits'>
+                {this.state.hits.map(hit => (
+                  <Hit key={hit.iata_code} hit={hit} />
+                ))}
+              </div>
+            )}
           </div>
-
           <div className='right-column'>
             <div id='map' />
           </div>
@@ -477,15 +438,7 @@ export class App extends React.Component {
           <div className='clear-both' />
         </section>
 
-        <footer>
-          Geo-Search demo - Read the{' '}
-          <a href='https://www.algolia.com/doc/geo-search/geo-search-overview'>
-            guide
-          </a>{' '}
-          - Source Code on{' '}
-          <a href='https://github.com/algolia/demo-geo-search'>GitHub</a> -
-          Powered by <a href='http://www.algolia.com/'>Algolia</a>
-        </footer>
+        <Footer />
       </React.Fragment>
     )
   }

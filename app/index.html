@@ -4,30 +4,8 @@
   <title>Geo Search Demo</title>
 </head>
 <body>
-  <!-- Hit template -->
-  <script type="text/template" id="hits-template">
-    {{#hits}}
-    <div class="hit">
-      <h3 class="hit-airport-code">{{{ _highlightResult.iata_code.value }}}</h3>
-      <h2 class="hit-name">{{{ _highlightResult.name.value }}}{{^ displayCity }} - {{{ _highlightResult.city.value }}}{{/displayCity}}</h2>
-      <p class="hit-location">{{{ _highlightResult.country.value }}}<span class="hit-distance"> {{ distance }}</span></p>
-    </div>
-    {{/hits}}
-  </script>
-  <!-- /Hit template -->
-
-
-  <!-- No-Results template -->
-  <script type="text/template" id="no-results-template">
-    <div id="no-results-message">
-      <p>We didn't find any airports in this location.</p>
-    </div>
-  </script>
-  <!-- /No-Results template -->
-
 
   <!-- Javascript -->
-  <script src="//cdn.jsdelivr.net/hogan.js/3.0.2/hogan.min.common.js"></script>
   <script src="//maps.googleapis.com/maps/api/js?key=AIzaSyBnDR4e5_qobPG6Vn_zjhc1vyOIooChZt8"></script>
   <!-- /Javascript -->
 
