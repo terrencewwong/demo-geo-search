@@ -192,7 +192,6 @@ export class App extends React.Component {
                 />
               ))}
             </MyMapComponent>
-            <div id='map' />
           </div>
 
           <div className='clear-both' />
