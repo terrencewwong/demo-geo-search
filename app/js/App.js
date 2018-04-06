@@ -3,35 +3,47 @@ import React from 'react'
 import $ from 'jquery'
 import algoliasearch from 'algoliasearch'
 import algoliasearchHelper from 'algoliasearch-helper'
-import GoogleMapReact from 'google-map-react'
+import { withGoogleMap, GoogleMap, Marker, Rectangle } from 'react-google-maps'
 
 import { Header } from './Header'
 import { Footer } from './Footer'
 
-class SimpleMap extends React.Component {
-  static defaultProps = {
-    center: {
-      lat: 59.95,
-      lng: 30.33
-    },
-    zoom: 11
-  }
+const _MyMapComponent = withGoogleMap(props => (
+  <GoogleMap
+    defaultCenter={{ lat: 50.57161084594319, lng: 5.362008500000002 }}
+    options={{
+      streetViewControl: false,
+      mapTypeControl: false,
+      zoom: 4,
+      minZoom: 3,
+      maxZoom: 12,
+      styles: [{ stylers: [{ hue: '#3596D2' }] }]
+    }}
+  >
+    <Rectangle
+      options={{
+        bounds: { north: 60, south: 40, east: 16, west: -4 },
+        strokeColor: '#EF5362',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#EF5362',
+        fillOpacity: 0.15,
+        draggable: true,
+        editable: true,
+        geodesic: true
+      }}
+    />
+    {props.children}
+  </GoogleMap>
+))
 
-  render () {
-    return (
-      // Important! Always set the container height explicitly
-      <div style={{ height: '100vh', width: '100%' }}>
-        <GoogleMapReact
-          bootstrapURLKeys={{ key: 'AIzaSyBnDR4e5_qobPG6Vn_zjhc1vyOIooChZt8' }}
-          defaultCenter={this.props.center}
-          defaultZoom={this.props.zoom}
-        >
-          <div lat={59.955413} lng={30.337844} text={'Kreyser Avrora'} />
-        </GoogleMapReact>
-      </div>
-    )
-  }
-}
+const MyMapComponent = props => (
+  <_MyMapComponent
+    containerElement={<div style={{ width: '614px', height: `720px` }} />}
+    mapElement={<div style={{ height: `100%` }} />}
+    {...props}
+  />
+)
 
 const Hit = ({ hit }) => {
   const { _highlightResult, _rankingInfo, city, distance, name } = hit
@@ -103,8 +115,8 @@ export class App extends React.Component {
       maxZoom: 12,
       styles: [{ stylers: [{ hue: '#3596D2' }] }]
     })
-    var fitMapToMarkersAutomatically = true
-    var markers = []
+    // var fitMapToMarkersAutomatically = true
+    // var markers = []
     var boundingBox
     var boundingBoxListeners = []
 
@@ -226,7 +238,7 @@ export class App extends React.Component {
         // No-op
       }
 
-      fitMapToMarkersAutomatically = true
+      // fitMapToMarkersAutomatically = true
       algoliaHelper.search()
     }
 
@@ -252,7 +264,7 @@ export class App extends React.Component {
         pageState === PAGE_STATES.BOUNDING_BOX_RECTANGLE ||
         pageState === PAGE_STATES.BOUNDING_BOX_POLYGON
       ) {
-        fitMapToMarkersAutomatically = false
+        // fitMapToMarkersAutomatically = false
       }
       algoliaHelper.setQuery(query).search()
     })
@@ -260,32 +272,12 @@ export class App extends React.Component {
     // DISPLAY RESULTS
     // ===============
     algoliaHelper.on('result', content => {
-      this.setState({ hits: content.hits.slice(0, 20) })
-      renderMap(content)
+      this.setState({ hits: content.hits })
     })
 
     algoliaHelper.on('error', function (error) {
       console.log(error)
     })
-
-    function renderMap (content) {
-      removeMarkersFromMap()
-      markers = []
-
-      for (var i = 0; i < content.hits.length; ++i) {
-        var hit = content.hits[i]
-        var marker = new google.maps.Marker({
-          position: { lat: hit._geoloc.lat, lng: hit._geoloc.lng },
-          map: map,
-          airport_id: hit.objectID,
-          title: hit.name + ' - ' + hit.city + ' - ' + hit.country
-        })
-        markers.push(marker)
-        attachInfoWindow(marker, hit)
-      }
-
-      if (fitMapToMarkersAutomatically) fitMapToMarkers()
-    }
 
     // EVENTS BINDING
     // ==============
@@ -327,22 +319,16 @@ export class App extends React.Component {
       $('.page_mode[data-mode="' + modeClass + '"]').addClass('active')
     }
 
-    function fitMapToMarkers () {
-      var mapBounds = new google.maps.LatLngBounds()
-      for (var i = 0; i < markers.length; i++) {
-        mapBounds.extend(markers[i].getPosition())
-      }
-      map.fitBounds(mapBounds)
-    }
-
-    function removeMarkersFromMap () {
-      for (var i = 0; i < markers.length; i++) {
-        markers[i].setMap(null)
-      }
-    }
+    //    function fitMapToMarkers () {
+    //      var mapBounds = new google.maps.LatLngBounds()
+    //      for (var i = 0; i < markers.length; i++) {
+    //        mapBounds.extend(markers[i].getPosition())
+    //      }
+    //      map.fitBounds(mapBounds)
+    //    }
 
     function rectangleBoundsChanged () {
-      fitMapToMarkersAutomatically = false
+      // fitMapToMarkersAutomatically = false
       algoliaHelper
         .setQueryParameter(
           'insideBoundingBox',
@@ -351,7 +337,7 @@ export class App extends React.Component {
         .search()
     }
     function polygonBoundsChanged () {
-      fitMapToMarkersAutomatically = false
+      // fitMapToMarkersAutomatically = false
       algoliaHelper
         .setQueryParameter(
           'insidePolygon',
@@ -376,23 +362,6 @@ export class App extends React.Component {
         })
       })
       return points.join()
-    }
-
-    function attachInfoWindow (marker, hit) {
-      var message
-
-      if (hit.name === hit.city) {
-        message = hit.name + ' - ' + hit.country
-      } else {
-        message = hit.name + ' - ' + hit.city + ' - ' + hit.country
-      }
-
-      var infowindow = new google.maps.InfoWindow({ content: message })
-      marker.addListener('click', function () {
-        setTimeout(function () {
-          infowindow.close()
-        }, 3000)
-      })
     }
 
     function throttle (func, wait) {
@@ -451,13 +420,24 @@ export class App extends React.Component {
               </div>
             ) : (
               <div id='hits'>
-                {this.state.hits.map(hit => (
-                  <Hit key={hit.iata_code} hit={hit} />
-                ))}
+                {this.state.hits
+                  .slice(0, 20)
+                  .map(hit => <Hit key={hit.iata_code} hit={hit} />)}
               </div>
             )}
           </div>
           <div className='right-column'>
+            <MyMapComponent>
+              {this.state.hits.map(hit => (
+                <Marker
+                  options={{
+                    position: { lat: hit._geoloc.lat, lng: hit._geoloc.lng },
+                    airport_id: hit.objectID,
+                    title: hit.name + ' - ' + hit.city + ' - ' + hit.country
+                  }}
+                />
+              ))}
+            </MyMapComponent>
             <div id='map' />
           </div>
 
@@ -465,7 +445,6 @@ export class App extends React.Component {
         </section>
 
         <Footer />
-        <SimpleMap />
       </React.Fragment>
     )
   }

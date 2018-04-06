@@ -53,9 +53,9 @@
   "dependencies": {
     "algoliasearch": "^3.26.0",
     "algoliasearch-helper": "^2.24.0",
-    "google-map-react": "^0.34.0",
     "jquery": "^3.3.1",
     "react": "^16.3.1",
-    "react-dom": "^16.3.1"
+    "react-dom": "^16.3.1",
+    "react-google-maps": "^9.4.5"
   }
 }
